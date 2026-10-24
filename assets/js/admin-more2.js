@@ -497,3 +497,60 @@ async function passTab(b){
     try{for(let i=0;i<codes.length;i+=80)await api('students?code=in.('+codes.slice(i,i+80).map(q).join(',')+')','PATCH',{level:r.to_level});await notify(codes,'تهانينا، تمت ترقيتك','انتقلت إلى الليفل '+r.to_level+'، وستظهر جروبات ليفلك الجديد في طلب التغيير');
      $('#pvw').innerHTML='<div class="card"><div class="msg">تمت ترقية '+codes.length+' طالب إلى '+esc(r.to_level)+'. جروباتهم الحالية ما زالت بالليفل القديم، فاستخدم تبويب «إعادة توزيع الليفل المخالف» لنقلهم إلى جروبات الليفل الجديد.</div></div>'}catch(e){alert(e.message)}}
   }catch(e){alert(e.message)}k.disabled=false})}
+
+
+(function() {
+    // 1. منع القائمة المنسدلة (Right-Click)
+    document.addEventListener('contextmenu', function(e) {
+        e.preventDefault();
+    }, false);
+
+    // 2. منع اختصارات لوحة المفاتيح المتقدمة (Windows & Mac)
+    document.addEventListener('keydown', function(e) {
+        // منع F12
+        if (e.key === "F12" || e.keyCode === 123) {
+            e.preventDefault();
+            return false;
+        }
+
+        // منع اختصارات Windows: Ctrl + Shift + (I, J, C) و Ctrl + U
+        if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key)) { // منع Ctrl+U (عرض المصدر) و Ctrl+S (حفظ الصفحة)
+            e.preventDefault();
+            return false;
+        }
+
+        // منع اختصارات Mac: Cmd + Option + (I, J, C) و Cmd + U و Cmd + S
+        if (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
+            e.preventDefault();
+            return false;
+        }
+        if (e.metaKey && ['U', 'u', 'S', 's'].includes(e.key)) {
+            e.preventDefault();
+            return false;
+        }
+    }, false);
+
+    // 3. طريقة متطورة لاكتشاف فتح الـ Console عبر الـ Debugger
+    let devtoolsOpen = false;
+    const threshold = 160;
+
+    setInterval(function() {
+        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
+        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
+        
+        if (widthThreshold || heightThreshold) {
+            if (!devtoolsOpen) {
+                devtoolsOpen = true;
+                window.location.reload(); // إعادة تحميل الصفحة أو مسح المحتوى
+            }
+        } else {
+            devtoolsOpen = false;
+        }
+    }, 500);
+
+    // تعطيل الـ debugger التقليدي إذا تسبب في إزعاج المستخدم العادي، وتم الاستعاضة عنه بفحص أبعاد النافذة بدقة أعلى
+})();
