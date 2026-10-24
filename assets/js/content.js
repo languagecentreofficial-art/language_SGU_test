@@ -18,15 +18,16 @@ const ctSafe=s=>String(s||'ملف').replace(/[\\\/:*?"<>|\x00-\x1f]/g,'_').trim(
 const ctErr=e=>'<div class="msg">'+(/content_|relation|schema cache/i.test(e.message)?'جداول المحتوى غير منشأة بعد. شغّل ملف <b>phase12_content.sql</b> في Supabase ← SQL Editor ثم أعد تحميل الصفحة.':'حدث خطأ: '+esc(e.message))+'</div>';
 async function ctAll(path){let o=[],i=0,r;do{r=await api(path+(path.includes('?')?'&':'?')+'limit=1000&offset='+i);o=o.concat(r);i+=1000}while(r.length==1000);return o}
 
-async function ctUpload(path,file,onp){await rpc('app_storage_ticket',{p_action:'up',p_paths:[path]});return new Promise((ok,no)=>{
- const e=ctExt(file.name),f=file.type?file:new File([file],file.name,{type:CT_MIME[e]||'application/octet-stream'}),fd=new FormData();
+function ctUpload(path,file,onp){return new Promise(async(ok,no)=>{
+ try{const e=ctExt(file.name),f=file.type?file:new File([file],file.name,{type:CT_MIME[e]||'application/octet-stream'}),fd=new FormData();
+ const sg=await gw('sign_upload',{path});const su=new URL(CT_ST+sg.url.replace(/^\/?(storage\/v1\/?)?/,''));
  fd.append('cacheControl','3600');fd.append('',f);
- const x=new XMLHttpRequest();x.open('POST',CT_ST+'object/'+CT_BUCKET+'/'+path.split('/').map(ctq).join('/'));
- x.setRequestHeader('apikey',KEY);x.setRequestHeader('Authorization','Bearer '+KEY);
+ const x=new XMLHttpRequest();x.open('PUT',su.toString());x.setRequestHeader('apikey',KEY);x.setRequestHeader('x-upsert','false');
  x.upload.onprogress=ev=>{if(ev.lengthComputable)onp(ev.loaded/ev.total)};
  x.onload=()=>x.status<300?ok():no(new Error(x.status==413?'حجم الملف أكبر من الحد المسموح في Supabase (Storage ← Settings ← Upload file size limit)':'فشل الرفع ('+x.status+'): '+x.responseText));
- x.onerror=()=>no(new Error('انقطع الاتصال أثناء الرفع'));x.send(fd)})}
-async function ctRm(paths){for(let i=0;i<paths.length;i+=50){await rpc('app_storage_ticket',{p_action:'del',p_paths:paths.slice(i,i+50)});const r=await fetch(CT_ST+'object/'+CT_BUCKET,{method:'DELETE',headers:{apikey:KEY,Authorization:'Bearer '+KEY,'Content-Type':'application/json'},body:JSON.stringify({prefixes:paths.slice(i,i+50)})});if(!r.ok)throw new Error(await r.text())}}
+ x.onerror=()=>no(new Error('انقطع الاتصال أثناء الرفع'));x.send(fd)}catch(er){no(er)}})}
+async function ctRm(paths){for(let i=0;i<paths.length;i+=50)await gw('rm_files',{paths:paths.slice(i,i+50)})}
+const ctNotifyAdmins=(t,b)=>gw('notify_admins',{title:t,body:b}).catch(()=>{});
 
 // ===== إدارة مجلدات محاضر واحد (تُستخدم للمحاضر وللأدمن) =====
 async function ctManager(box,code,o,openIds){
@@ -52,14 +53,14 @@ async function ctManager(box,code,o,openIds){
    if(t.dataset.fa){const f=F.find(x=>x.id==t.dataset.f),a=t.dataset.fa;
     if(a=='vis')await api('content_folders?id=eq.'+f.id,'PATCH',{visible:!f.visible});
     else if(a=='ren'){const n=prompt('اسم المجلد',f.name);if(!n||!n.trim())return;await api('content_folders?id=eq.'+f.id,'PATCH',{name:n.trim()})}
-    else if(a=='req'){if(!confirm('إرسال طلب حذف المجلد «'+f.name+'» وكل ملفاته إلى الأدمن؟ لن يُحذف إلا بموافقته.'))return;await api('content_folders?id=eq.'+f.id,'PATCH',{del_req:true,del_by:o.u.code,del_at:new Date().toISOString()});notifyAdmins('طلب حذف مجلد محتوى','المحاضر '+o.u.name+' يطلب حذف المجلد: '+f.name);alert('تم إرسال الطلب للأدمن')}
+    else if(a=='req'){if(!confirm('إرسال طلب حذف المجلد «'+f.name+'» وكل ملفاته إلى الأدمن؟ لن يُحذف إلا بموافقته.'))return;await api('content_folders?id=eq.'+f.id,'PATCH',{del_req:true,del_by:o.u.code,del_at:new Date().toISOString()});ctNotifyAdmins('طلب حذف مجلد محتوى','المحاضر '+o.u.name+' يطلب حذف المجلد: '+f.name);alert('تم إرسال الطلب للأدمن')}
     else if(a=='undo')await api('content_folders?id=eq.'+f.id,'PATCH',{del_req:false,del_by:null,del_at:null});
     else if(a=='rm'){if(!confirm('حذف المجلد «'+f.name+'» وكل ملفاته نهائياً؟ لا يمكن التراجع.'))return;await ctRm((by[f.id]||[]).map(i=>i.file_path));await api('content_folders?id=eq.'+f.id,'DELETE');}
     return again()}
    if(t.dataset.ia){const i=I.find(x=>x.id==t.dataset.i),a=t.dataset.ia;
     if(a=='vis')await api('content_items?id=eq.'+i.id,'PATCH',{visible:!i.visible});
     else if(a=='ren'){const n=prompt('اسم الملف كما يظهر للطلاب',i.title);if(!n||!n.trim())return;await api('content_items?id=eq.'+i.id,'PATCH',{title:n.trim()})}
-    else if(a=='req'){if(!confirm('إرسال طلب حذف «'+i.title+'» إلى الأدمن؟ لن يُحذف إلا بموافقته.'))return;await api('content_items?id=eq.'+i.id,'PATCH',{del_req:true,del_by:o.u.code,del_at:new Date().toISOString()});notifyAdmins('طلب حذف ملف محتوى','المحاضر '+o.u.name+' يطلب حذف الملف: '+i.title);alert('تم إرسال الطلب للأدمن')}
+    else if(a=='req'){if(!confirm('إرسال طلب حذف «'+i.title+'» إلى الأدمن؟ لن يُحذف إلا بموافقته.'))return;await api('content_items?id=eq.'+i.id,'PATCH',{del_req:true,del_by:o.u.code,del_at:new Date().toISOString()});ctNotifyAdmins('طلب حذف ملف محتوى','المحاضر '+o.u.name+' يطلب حذف الملف: '+i.title);alert('تم إرسال الطلب للأدمن')}
     else if(a=='undo')await api('content_items?id=eq.'+i.id,'PATCH',{del_req:false,del_by:null,del_at:null});
     else if(a=='rm'){if(!confirm('حذف «'+i.title+'» نهائياً؟'))return;await ctRm([i.file_path]);await api('content_items?id=eq.'+i.id,'DELETE')}
     return again([i.folder_id])}

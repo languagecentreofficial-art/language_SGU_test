@@ -193,7 +193,7 @@ async function studentEditor(code,done){
  document.body.append(m);const close=()=>m.remove(),err=e=>{let t=e.message;try{t=JSON.parse(t).message}catch(x){}alert(t)},T=m.querySelector('#se_to'),LI=m.querySelector('[data-k=level]'),fill=()=>{T.innerHTML=opts(lv(LI.value))};fill();LI.oninput=fill;
  m.querySelector('#sx').onclick=close;
  m.querySelector('#se').onclick=async()=>{const v={};m.querySelectorAll('[data-k]').forEach(i=>v[i.dataset.k]=i.value.trim()||null);if(!v.code||!v.name)return alert('الكود والاسم مطلوبان');
-  try{let c=s.code;if(v.code!=s.code){await rpc('app_change_student_code',{p_old:s.code,p_new:v.code});c=v.code}const {code:_c,...d}=v;await api('students?code=eq.'+encodeURIComponent(c),'PATCH',d);
+  try{let c=s.code;if(v.code!=s.code){await rpc('change_student_code',{p_old:s.code,p_new:v.code});c=v.code}const {code:_c,...d}=v;await api('students?code=eq.'+encodeURIComponent(c),'PATCH',d);
    const to=+T.value;if(to){const fr=cur.length>1?+m.querySelector('#se_fr').value:(cur[0]||0);if(fr)await api(`enrollments?student_code=eq.${encodeURIComponent(c)}&slot_id=eq.${fr}`,'DELETE');await api('enrollments?on_conflict=student_code,slot_id','POST',{student_code:c,slot_id:to},'resolution=merge-duplicates,return=minimal');const t=SM[to];await notify([c],'تم تحديث كلاسك',`${t.day} ${fmt(t.start_time)}-${fmt(t.end_time)} كلاس ${t.place}`)}
    alert('تم الحفظ');close();done&&done()}catch(e){err(e)}};
  if(m.querySelector('#sd'))m.querySelector('#sd').onclick=async()=>{if(!confirm('حذف الطالب '+s.name+' نهائياً مع كل بياناته (حضور، درجات، جروبات)؟'))return;try{await api('students?code=eq.'+encodeURIComponent(s.code),'DELETE');alert('تم الحذف');close();done&&done()}catch(e){err(e)}}}

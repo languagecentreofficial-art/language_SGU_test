@@ -1,9 +1,10 @@
 :root{--n1:#0a1a44;--n2:#12307a;--g:#d4a63a;--g2:#f2cf6b;--line:#e1e6f2;--mut:#5d6b8f;color-scheme:light only}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;font-family:'Cairo',Tahoma,sans-serif;color:#0a1a44;background:#f3f5fb;-webkit-text-size-adjust:100%}
-body{min-height:100vh;min-height:100svh;padding-top:calc(71px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;background-color:#f3f5fb}
+html{height:100%}
+body{min-height:100%;padding-top:calc(71px + env(safe-area-inset-top,0px));display:flex;flex-direction:column;background-color:#f3f5fb}
 svg{flex:none;display:block}
-header{background:#0a1a44;background:linear-gradient(110deg,#0a1a44,#12307a);color:#fff;height:calc(71px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 20px 0;display:flex;align-items:center;gap:12px;position:fixed;top:0;left:0;right:0;z-index:30;-webkit-transform:translate3d(0,0,0);transform:translate3d(0,0,0);-webkit-backface-visibility:hidden;border-bottom:3px solid #d4a63a}
+header{background:#0a1a44;background:linear-gradient(110deg,#0a1a44,#12307a);color:#fff;height:calc(71px + env(safe-area-inset-top,0px));padding:env(safe-area-inset-top,0px) 20px 0;display:flex;align-items:center;gap:12px;position:fixed;top:0;left:0;right:0;z-index:30;border-bottom:3px solid #d4a63a}
 header img{height:44px;width:44px;object-fit:contain;background:#fff;border-radius:12px;padding:3px}
 header h1{font-size:1rem;margin:0;flex:1;line-height:1.25;color:#fff;font-weight:700}
 header h1 small{display:block;color:#f2cf6b;font-weight:600;font-size:.76rem}
@@ -61,11 +62,11 @@ button.btn.alt{background:#12307a;color:#fff}button.btn.no{background:#b3263f;co
 .note{font-size:.8rem;color:#5d6b8f;text-align:right}.prof label,.prof input{text-align:right}
 footer{background:#0a1a44;color:#aab4d4;text-align:center;padding:18px;border-top:3px solid #d4a63a}
 .soc{display:flex;justify-content:center;gap:12px;margin-bottom:6px}.soc a{width:40px;height:40px;border-radius:50%;border:1.5px solid #d4a63a;color:#f2cf6b;display:grid;place-items:center}
-body.auth main{display:flex;align-items:flex-start;justify-content:center;padding-top:max(24px,10svh)}
+body.auth main{display:flex;align-items:flex-start;justify-content:center;padding-top:max(24px,8vh)}
 .login{width:100%;max-width:400px;margin:0 auto;padding:30px;border-radius:20px;border-top:5px solid #d4a63a}
 .printhead{display:none}
 @media(max-width:860px){.menu{display:flex}.who small{display:none}header h1{font-size:.86rem}
- nav.side{transform:translateX(105%);transition:.25s;width:272px;box-shadow:-10px 0 30px #0006}body.open nav.side{transform:none}
+ nav.side{transform:translateX(105%);visibility:hidden;transition:transform .25s,visibility .25s;width:272px;box-shadow:-10px 0 30px #0006}body.open nav.side{transform:none;visibility:visible}
  body.has-side>main,body.has-side>footer{margin-right:0}body.has-side main{padding:18px 14px 28px}.tiles{grid-template-columns:1fr 1fr;gap:12px}.tile{padding:16px}}
 @media print{header,footer,nav,.noprint,h2.pt{display:none!important}.printhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}body.has-side>main{margin:0}.card{box-shadow:none}}
 .blockbar{display:flex;gap:14px;align-items:flex-start;background:#fde8ec;color:#8f1d33;border:1.5px solid #c62a47;border-inline-start:6px solid #c62a47;border-radius:14px;padding:16px;margin-bottom:18px}.blockbar span{display:block;font-size:.88rem;margin-top:2px}
@@ -87,7 +88,7 @@ body.has-side #v>:not(.card),body.has-side #v>.card.wide{grid-column:1/-1}
 input[type=checkbox],input[type=radio]{-webkit-appearance:auto!important;appearance:auto!important;width:19px!important;height:19px;vertical-align:middle;margin-inline-end:6px;accent-color:#12307a}
 
 /* ثبات iOS */
-html,body{max-width:100%}html{overflow-x:hidden}body{overflow-x:clip}
+html,body{max-width:100%}main{overflow-x:clip}
 input,select,textarea{font-size:16px}
 @media(hover:hover){.tile:hover{transform:translateY(-3px);box-shadow:0 12px 28px #0a1a4420}nav.side button:hover{background:#ffffff10;color:#fff}.srow:hover{border-color:#d4a63a}.clk:hover td{background:#fff8e3!important}}
 /* هيدر ثابت الارتفاع على الجوال: بدون التفاف نص يغيّر الارتفاع */
@@ -96,5 +97,7 @@ header h1,header h1 small{white-space:nowrap;text-overflow:ellipsis;overflow:hid
 @media(max-width:520px){header{gap:8px;padding-left:12px;padding-right:12px}header img{height:38px;width:38px}header h1{font-size:.74rem}header h1 small{font-size:.66rem}.who{max-width:84px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.who b{font-size:.78rem;overflow:hidden;text-overflow:ellipsis}.bell,.out,.menu{padding:7px 8px}}
 
 /* ثبات iOS: لا اعتماد على ارتفاع نافذة متغيّر، ومنع الزوم المزدوج */
-html{touch-action:manipulation;-webkit-overflow-scrolling:touch}
-body{overscroll-behavior-y:none}
+
+/* عناوين مجموعات القائمة الجانبية */
+nav.side .navg{color:#f2cf6b;font-size:.74rem;font-weight:800;letter-spacing:.3px;padding:14px 14px 4px;margin-top:8px;border-top:1px solid #ffffff1a;opacity:.9}
+nav.side .navg:first-child{margin-top:0;border-top:0}
