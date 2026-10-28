@@ -108,4 +108,3 @@ nav.side .navg:first-child{margin-top:0;border-top:0}
 .evs{display:block;color:#5d6b8f;font-size:.72rem}
 .evnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.evnav input{flex:1;min-width:150px;width:auto}.evnav .btn{margin:0}
 .evt td:first-child,.evt th:first-child{position:sticky;right:0;z-index:1;background:#fff}.evt th:first-child{background:#0a1a44}
-@media screen{.printarea{position:fixed;left:-99999px;top:0;width:1000px}}
