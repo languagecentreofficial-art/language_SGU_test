@@ -90,3 +90,24 @@ async function manualAttTab(b){
    for(let i=0;i<rows.length;i+=200)await api('attendance?on_conflict=student_code,date','POST',rows.slice(i,i+200),'resolution=merge-duplicates,return=minimal');
    alert('تم تسجيل '+rows.length+' طالب كـ'+(present?'حاضر':'غائب')+' بتاريخ '+d+(skip.length?'\nلم يُسجَّلوا لأنهم غير مسجلين في أي جروب: '+skip.join('، '):''));
    if(rows.length){sel.clear();draw()}}catch(e){alert(e.message)}k.disabled=false}}
+
+
+/* ---------- ساعات عمل المحاضرين (الأسبوع والشهر) ---------- */
+async function hoursTab(b){
+ const HD=['السبت','الأحد','الاثنين','الثلاثاء','الأربعاء','الخميس','الجمعة'],tz=evToday();
+ b.innerHTML=`<div class="card"><h3>ساعات عمل المحاضرين</h3><label>أي يوم داخل الأسبوع (الأسبوع من السبت إلى الجمعة)</label><input type="date" id="hw" value="${tz}"><label>الشهر</label><input type="month" id="hm" value="${tz.slice(0,7)}"><p class="note"><b>المجدول</b>: ساعات الجروبات حسب الجدول الأسبوعي. <b>الفعلي</b>: الحصص التي سُجّل فيها غياب فعلاً في الفترة.</p><button class="btn" id="hg">عرض التقرير</button></div><div id="ho"></div>`;
+ const wk=d=>{const x=new Date(d+'T00:00:00Z'),back=(x.getUTCDay()+1)%7;x.setUTCDate(x.getUTCDate()-back);const s=x.toISOString().slice(0,10);return[s,evAdd(s,6)]};
+ const agg=r=>{const L={};r.rows.forEach(s=>{const o=L[s.lecturer_code]=L[s.lecturer_code]||{name:s.lecturer_name,g:0,ss:0,hs:0,sa:0,ha:0,d:{}};o.g++;o.ss+=s.sched;o.hs+=s.sched*s.hours;o.sa+=s.actual;o.ha+=s.actual*s.hours;o.d[s.day]=(o.d[s.day]||0)+s.sched*s.hours});return Object.values(L).sort((a,c)=>String(a.name).localeCompare(String(c.name),'ar'))};
+ const f2=v=>evN(Math.round(v*100)/100);
+ $('#hg').onclick=async()=>{const k=$('#hg');k.disabled=true;$('#ho').innerHTML='<div class="msg">جارٍ حساب الساعات...</div>';
+  try{const [wf,wt]=wk($('#hw').value||tz),m=$('#hm').value||tz.slice(0,7),[W,M]=await Promise.all([gw('hours_report',{from:wf,to:wt}),gw('hours_report',{from:m+'-01',to:monthEnd(m)})]),A=agg(W),B=agg(M);
+   const wH=['المحاضر','عدد الجروبات',...HD.map(d=>d+' (مجدول)'),'المجدول (ساعة)','الفعلي (ساعة)'],wR=A.map(o=>[o.name,o.g,...HD.map(d=>f2(o.d[d]||0)),f2(o.hs),f2(o.ha)]);
+   const mH=['المحاضر','حصص مجدولة','ساعات مجدولة','حصص فعلية','ساعات فعلية','الالتزام %'],mR=B.map(o=>[o.name,o.ss,f2(o.hs),o.sa,f2(o.ha),o.hs?f2(o.ha/o.hs*100)+'%':'-']);
+   const dH=['المحاضر','اليوم','من','إلى','الكلاس','الليفل','ساعات الحصة','حصص مجدولة','حصص فعلية','ساعات فعلية'],dR=M.rows.slice().sort((a,c)=>String(a.lecturer_name).localeCompare(String(c.lecturer_name),'ar')||HD.indexOf(a.day)-HD.indexOf(c.day)||a.start.localeCompare(c.start)).map(s=>[s.lecturer_name,s.day,s.start,s.end,s.place,s.level,f2(s.hours),s.sched,s.actual,f2(s.actual*s.hours)]);
+   const tot=(R,i)=>f2(R.reduce((s,r)=>s+(+String(r[i]).replace('%','')||0),0)),tbl=(H,R,foot)=>`<table class="table"><tr>${H.map(h=>`<th>${esc(h)}</th>`).join('')}</tr>${R.map(r=>`<tr>${r.map((v,i)=>`<td>${i?esc(v):'<b>'+esc(v)+'</b>'}</td>`).join('')}</tr>`).join('')||`<tr><td colspan="${H.length}">لا توجد بيانات</td></tr>`}${foot||''}</table>`;
+   const wFoot=R=>R.length?`<tr>${['الإجمالي','',...HD.map((_,i)=>tot(R,i+2)),tot(R,9),tot(R,10)].map(v=>`<th>${v}</th>`).join('')}</tr>`:'',mFoot=R=>R.length?`<tr><th>الإجمالي</th><th>${tot(R,1)}</th><th>${tot(R,2)}</th><th>${tot(R,3)}</th><th>${tot(R,4)}</th><th></th></tr>`:'';
+   $('#ho').innerHTML=`<div class="card wrap"><h3>الأسبوع: ${wf} → ${wt}</h3>${tbl(wH,wR,wFoot(wR))}</div><div class="card wrap"><h3>الشهر: ${m}</h3>${tbl(mH,mR,mFoot(mR))}</div><div class="card wrap"><details><summary>تفاصيل كل جروب خلال الشهر (${dR.length})</summary>${tbl(dH,dR)}</details><button class="btn alt" id="hx">تحميل Excel</button><button class="btn alt" id="hp">PDF / طباعة</button></div>`;
+   $('#hx').onclick=()=>{if(typeof XLSX=='undefined')return alert('مكتبة الإكسيل لم تُحمَّل');const wb=XLSX.utils.book_new();[['Week',wH,wR],['Month',mH,mR],['Details',dH,dR]].forEach(([n,H,Rw])=>XLSX.utils.book_append_sheet(wb,XLSX.utils.aoa_to_sheet([H,...Rw]),n));XLSX.writeFile(wb,'lecturer_hours_'+m+'.xlsx')};
+   $('#hp').onclick=()=>printReport('ساعات عمل المحاضرين','الأسبوع '+wf+' → '+wt+' | الشهر '+m,`<h3>الأسبوع</h3>${tbl(wH,wR,wFoot(wR))}<h3>الشهر</h3>${tbl(mH,mR,mFoot(mR))}<h3>تفاصيل الجروبات (الشهر)</h3>${tbl(dH,dR)}`)}
+  catch(e){$('#ho').innerHTML='<div class="msg">'+esc(e.message)+'</div>'}k.disabled=false};
+ $('#hg').click()}

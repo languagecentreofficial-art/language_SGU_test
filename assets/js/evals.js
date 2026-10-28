@@ -5,11 +5,7 @@ const evDayOf=d=>DAYS[new Date(d+'T00:00:00Z').getUTCDay()];
 const evAdd=(d,n)=>{const x=new Date(d+'T00:00:00Z');x.setUTCDate(x.getUTCDate()+n);return x.toISOString().slice(0,10)};
 const evN=v=>v==null||v===''?'-':String(Math.round(+v*100)/100);
 // طباعة / حفظ PDF من المتصفح (منطقة طباعة مخفية عن الشاشة)
-function evPrint(title,sub,html){
-  const d=document.createElement('div');d.className='printarea';
-  d.innerHTML=`<div class="printhead"><div><b>${esc(title)}</b><br><small>${esc(sub||'')}</small></div><img src="assets/logo.png" height="56" alt=""></div>${html}`;
-  document.body.append(d);const done=()=>{d.remove();removeEventListener('afterprint',done)};addEventListener('afterprint',done);
-  setTimeout(()=>print(),50);setTimeout(()=>{if(d.isConnected)d.remove()},120000)}
+function evPrint(title,sub,html){printReport(title,sub,html)}
 function evSheetHtml(r){const c=r.cfg;
   return `<table class="table"><tr><th>الطالب</th><th>الكود</th><th>الكلية</th><th>المستوى الدراسي</th><th>English</th><th>الغياب /${c.attendance.max}</th><th>المشاركة /${c.participation.max}</th><th>Assignment /${c.assignment.max}</th><th>البرزنتيشن /${c.presentation.max}</th><th>الميد تيرم /${c.midterm.max}</th><th>النهائي /${c.final.max}</th><th>المجموع /${r.total_max}</th></tr>`+
   r.students.map(s=>`<tr><td>${esc(s.name)}</td><td>${esc(s.code)}</td><td>${esc(s.college)}</td><td>${esc(s.study_level)}</td><td>${esc(s.level)}</td><td>${evN(s.att.mark)}</td><td>${evN(s.participation.total)}</td><td>${evN(s.assignment.total)}</td><td>${evN(s.presentation.total)}</td><td>${evN(s.midterm&&s.midterm.mark)}</td><td>${evN(s.final&&s.final.mark)}</td><td><b>${evN(s.total)}</b></td></tr>`).join('')+'</table>'}

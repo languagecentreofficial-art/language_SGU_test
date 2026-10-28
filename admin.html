@@ -1,5 +1,5 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=45"><title>الإدارة</title></head><body><main><div id="v"></div></main>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="assets/js/core.js?v=45"></script><script src="assets/js/admin-extra.js?v=43"></script><script src="assets/js/admin-more.js?v=45"></script><script src="assets/js/admin-more2.js?v=44"></script><script src="assets/js/evals.js?v=45"></script><script src="assets/js/admin-eval.js?v=45"></script><script src="assets/js/content.js?v=43"></script><script>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=47"><title>الإدارة</title></head><body><main><div id="v"></div></main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="assets/js/core.js?v=47"></script><script src="assets/js/admin-extra.js?v=47"></script><script src="assets/js/admin-more.js?v=47"></script><script src="assets/js/admin-more2.js?v=47"></script><script src="assets/js/evals.js?v=47"></script><script src="assets/js/admin-eval.js?v=47"></script><script src="assets/js/content.js?v=47"></script><script>
 window.onerror=m=>document.body.insertAdjacentHTML('afterbegin','<div class="msg" style="margin:80px 20px 0">خطأ في الصفحة: '+m+'<br>تأكد من رفع كل الملفات الجديدة ثم اضغط Ctrl+F5.</div>');
 const fn=n=>{try{const f=(0,eval)(n);if(typeof f=='function')return f}catch(e){}return b=>{b.innerHTML='<div class="msg">ملف هذا القسم غير محدّث على الاستضافة. ارفع ملفات المشروع كاملة ثم اضغط Ctrl+F5.</div>'}};
 const u=guard(['admin','assistant','affairs']);shell(u);
@@ -24,10 +24,10 @@ const ALL=[['الرئيسية',async b=>{const [a,c,d,e,f]=await Promise.all([co
 ];
 const ov=(n,f)=>{const i=ALL.findIndex(t=>t[0]==n);if(i>=0&&typeof f=='function')ALL[i][1]=f};ov('الطلبات',fn('reqTab'));
 ov('إعلان',fn('announceTab'));ov('جروب جديد',fn('newSlotTab'));ov('طالب جديد',fn('newStudentTab'));ov('الرئيسية',fn('homeTab'));ov('الجداول ونقل الطلاب',fn('moveTab2'));ov('الشكاوى',fn('complainTab'));
-ALL.push(['شروط النجاح والترقية',fn('passTab')],['تسجيل غياب يدوي',fn('manualAttTab')],['الفصول الدراسية',fn('termsTab')],['نتائج التقييمات',fn('evalReportTab')]);
+ALL.push(['شروط النجاح والترقية',fn('passTab')],['تسجيل غياب يدوي',fn('manualAttTab')],['الفصول الدراسية',fn('termsTab')],['نتائج التقييمات',fn('evalReportTab')],['ساعات المحاضرين',fn('hoursTab')]);
 const GR=[['',['الرئيسية']],
 ['الطلاب',['طالب جديد','رفع طلاب','بيانات الطلاب','الطلاب الجدد','الطلاب في أكثر من كلاس','الدرجات','شروط النجاح والترقية','الغياب والإنذارات','تعديل الغياب','تسجيل غياب يدوي','الفصول الدراسية','نتائج التقييمات','التقارير']],
-['الجداول',['رفع إكسيل','معاينة الجداول','الجداول ونقل الطلاب','جروب جديد','الطلبات','إعادة توزيع الليفل المخالف','قواعد الأيام','المحاضرون','توزيع المحاضرين']],
+['الجداول',['رفع إكسيل','معاينة الجداول','الجداول ونقل الطلاب','جروب جديد','الطلبات','إعادة توزيع الليفل المخالف','قواعد الأيام','المحاضرون','توزيع المحاضرين','ساعات المحاضرين']],
 ['شؤون الطلاب',['الحجب وشؤون الطلاب','الشكاوى','إعلان','المحتوى','طلبات حذف المحتوى']],
 ['النظام',['الصلاحيات','حسابات']]],GOF={},ORD={};let _i=0;GR.forEach(([g,a])=>a.forEach(n=>{GOF[n]=g;ORD[n]=_i++}));
 ALL.sort((a,b)=>(ORD[a[0]]??999)-(ORD[b[0]]??999));
