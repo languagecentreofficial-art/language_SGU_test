@@ -81,3 +81,31 @@ async function autoApprovePending(slotIds){
 
 Object.assign(MAP,{'التقييمات':'clip','تقييماتي':'chart','تسجيل غياب يدوي':'pen','الفصول الدراسية':'cal','نتائج التقييمات':'chart'});
 Object.assign(DESC,{'التقييمات':'قيّم طلاب جروباتك أسبوعياً وحمّل السجلات','تقييماتي':'نتائجك في الترم والعام الدراسي'});
+
+// ===== طباعة / PDF: نافذة نظيفة تحوي التقرير فقط (تطبع كل الصفوف بصفحات متعددة) =====
+const monthEnd=m=>{const [y,mo]=String(m).split('-').map(Number);return new Date(Date.UTC(y,mo,0)).toISOString().slice(0,10)};
+function openPrintWin(){const w=window.open('','_blank');if(w){try{w.document.write('<meta charset="utf-8"><body dir="rtl" style="font-family:Tahoma;padding:30px">جارٍ تجهيز التقرير...</body>')}catch(e){}}return w}
+function printWin(inner,title,extraCss,w){
+  const heads=[...document.querySelectorAll('link[rel=stylesheet],style')].map(n=>n.tagName=='LINK'?`<link rel="stylesheet" href="${n.href}">`:n.outerHTML).join('');
+  const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>${heads}<style>
+@page{size:A4 landscape;margin:10mm}
+html,body{height:auto!important;min-height:0!important;display:block!important;padding:0!important;margin:0!important;background:#fff!important;overflow:visible!important}
+body{padding:8px!important;font-size:12px}
+.noprint{display:none!important}
+.printarea{position:static!important;left:auto!important;width:auto!important;display:block!important}
+.printarea .printhead,.phd{display:flex!important;align-items:center;gap:16px;border-bottom:3px solid #d4a63a;padding-bottom:10px;margin-bottom:12px}
+.card{box-shadow:none!important;border:0!important;padding:0!important;margin:0 0 10px!important;background:#fff!important}
+.wrap{overflow:visible!important}
+table{width:100%;border-collapse:collapse}thead{display:table-header-group}tr{break-inside:avoid;page-break-inside:avoid}
+*{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+.pbar{background:#fffbe6;padding:10px;text-align:center;border-bottom:1px solid #d4a63a;margin-bottom:8px}@media print{.pbar{display:none}}
+${extraCss||''}</style></head><body><div class="pbar"><button onclick="print()" style="font:inherit;padding:8px 22px;font-weight:700;cursor:pointer">طباعة / حفظ PDF</button> <small>يُفتح مربع الطباعة تلقائياً، اختر «حفظ بصيغة PDF»</small></div>${inner}</body></html>`;
+  w=w||window.open('','_blank');if(!w){alert('اسمح بالنوافذ المنبثقة لهذا الموقع ثم أعد المحاولة');return}
+  w.document.open();w.document.write(html);w.document.close();let done=false;const go=()=>{if(done)return;done=true;try{w.focus();w.print()}catch(e){}};
+  w.addEventListener('load',()=>setTimeout(go,400));setTimeout(go,2500)}
+function printReport(title,sub,tableHtml,w){
+  const logo=new URL('assets/logo.png',location.href).href;
+  printWin(`<div class="printarea"><div class="printhead"><img src="${logo}" height="56" alt=""><div><b>كورس اللغة الإنجليزية</b><br>جامعة الصالحية الجديدة<br>${esc(title)}<br><small>${esc(sub||'')}</small></div></div>${tableHtml}</div>`,title,'',w)}
+// جدول كامل للطباعة (رأس يتكرر في كل صفحة)
+function printTable(headers,rows){return `<table class="table"><thead><tr><th>#</th>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
+Object.assign(MAP,{'ساعات المحاضرين':'board'});

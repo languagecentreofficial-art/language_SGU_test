@@ -2,7 +2,7 @@ const EN2AR={sunday:'الأحد',monday:'الاثنين',tuesday:'الثلاثا
 const q=s=>encodeURIComponent(s);
 const nzp=s=>String(s||'').toLowerCase().replace(/^class\s*/,'').replace(/^c(?=\d)/,'').split('-')[0].trim();
 function t24(s){const m=s.match(/(\d{1,2}):(\d{2})\s*(AM|PM)?/i);let h=+m[1];const a=(m[3]||'').toUpperCase();if(a=='PM'&&h<12)h+=12;if(a=='AM'&&h==12)h=0;if(!a&&h<7)h+=12;return String(h).padStart(2,'0')+':'+m[2]}
-async function all(path){let o=[],i=0,r;do{r=await api(path+(path.includes('?')?'&':'?')+'limit=1000&offset='+i);o=o.concat(r);i+=1000}while(r.length==1000);return o}
+async function all(path){return (await gw('db_all',{p:path}))||[]}
 // قراءة الشيت: يدعم أكثر من بلوك (يوم/وقت/مبنى/كلاس/جدول طلاب) في نفس الملف
 function parseRows(rows){const out=[];let c=null,h=false;
  for(const r of rows){const a=String(r[0]??'').trim();
