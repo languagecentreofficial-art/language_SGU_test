@@ -1,17 +1,18 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=43"><title>المحاضر</title></head><body><main><div id="v"></div></main>
-<script src="assets/js/core.js?v=43"></script><script src="assets/js/content.js?v=43"></script><script>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=45"><title>المحاضر</title></head><body><main><div id="v"></div></main>
+<script src="assets/js/core.js?v=45"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="assets/js/content.js?v=43"></script><script src="assets/js/evals.js?v=45"></script><script>
 const u=guard(['lecturer','admin','assistant']);shell(u);
 tabs([
 ['تسجيل الغياب',async b=>{const today=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
  b.innerHTML=`<div class="card"><label>اليوم</label><select id="d">${DAYS.map((d,i)=>`<option ${i==new Date().getDay()?'selected':''}>${d}</option>`).join('')}</select><label>الجروب</label><select id="g"></select></div><div id="l"></div>`;
  const loadG=async()=>{const s=await api(`slots?lecturer_code=eq.${u.code}&day=eq.${encodeURIComponent($('#d').value)}&order=start_time`);$('#g').innerHTML=s.map(x=>`<option value="${x.id}">${fmt(x.start_time)}-${fmt(x.end_time)} | ${esc(x.place)} | ${esc(x.level)}</option>`).join('')||'<option value="">لا توجد جروبات</option>';loadS()};
  const loadS=async()=>{const id=$('#g').value;if(!id){$('#l').innerHTML='';return}
-  const [en,at]=await Promise.all([api(`enrollments?slot_id=eq.${id}&select=student:students(code,name)`),api(`attendance?slot_id=eq.${id}&date=eq.${today}`)]);
+  const en=await api(`enrollments?slot_id=eq.${id}&select=student:students(code,name)`);const at=en.length?await api(`attendance?date=eq.${today}&student_code=in.(${en.map(e=>encodeURIComponent(e.student.code)).join(',')})`):[];
   const on=new Set(at.filter(x=>x.present).map(x=>x.student_code));
   $('#l').innerHTML=en.map(e=>`<div class="stud ${on.has(e.student.code)?'p':''}" data-c="${e.student.code}"><span>${esc(e.student.name)}<br><small>${e.student.code}</small></span><span>${on.has(e.student.code)?'✔ حاضر':''}</span></div>`).join('')+'<button class="btn alt" id="sv" style="width:100%">تسجيل غياب سكشن اليوم</button><p class="msg">يمكنك تعديل سجل اليوم الحالي فقط. بعد انتهاء اليوم يعدّله الأدمن.</p>';
   document.querySelectorAll('.stud').forEach(d=>d.onclick=()=>{d.classList.toggle('p');d.lastChild.textContent=d.classList.contains('p')?'✔ حاضر':''});
-  $('#sv').onclick=async()=>{const rows=[...document.querySelectorAll('.stud')].map(d=>({student_code:d.dataset.c,slot_id:+id,date:today,present:d.classList.contains('p'),marked_by:u.code}));await api('attendance?on_conflict=student_code,slot_id,date','POST',rows,'resolution=merge-duplicates,return=minimal');alert('تم تسجيل الحضور، وغياب باقي الطلاب')}};
+  $('#sv').onclick=async()=>{const rows=[...document.querySelectorAll('.stud')].map(d=>({student_code:d.dataset.c,slot_id:+id,date:today,present:d.classList.contains('p'),marked_by:u.code}));await api('attendance?on_conflict=student_code,date','POST',rows,'resolution=merge-duplicates,return=minimal');alert('تم تسجيل الحضور، وغياب باقي الطلاب (حالة واحدة للطالب في اليوم، والحضور المسجل من جروب آخر يبقى كما هو)')}};
  $('#d').onchange=loadG;$('#g').onchange=loadS;loadG()}],
+['التقييمات',b=>evalLecTab(b,u)],
 ['جدول محاضراتي',async b=>{const s=await api(`slots?lecturer_code=eq.${u.code}&order=start_time`);if(!s.length){b.innerHTML='<div class="msg">لا توجد جروبات مسندة إليك حتى الآن.</div>';return}
  const cap=g=>g.capacity||35,lb=g=>`${g.day} ${fmt(g.start_time)}-${fmt(g.end_time)} | كلاس ${esc(g.place)} | ${esc(g.level)}`,en=await api(`enrollments?slot_id=in.(${s.map(x=>x.id).join(',')})&select=slot_id`),N={};en.forEach(e=>N[e.slot_id]=(N[e.slot_id]||0)+1);
  const cnt=g=>`<span id="n${g.id}" ${(N[g.id]||0)>cap(g)?'class="bad"':''}>${N[g.id]||0}/${cap(g)} طالب</span>`;

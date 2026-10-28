@@ -68,7 +68,7 @@ const lecTab=b=>{upBox(b,'رفع / تحديث المحاضرين وتوقيتا�
 // ===== الدرجات =====
 async function gradesTab(b){
  const ex=await api('exams?order=id');
- b.innerHTML=`<div class="card"><h3>إنشاء اختبار / تقييم</h3><label>الاسم</label><input id="en"><label>النوع</label><select id="ek"><option value="quiz">كويز</option><option value="midterm">اختبار فصلي</option><option value="final">اختبار نهاية العام</option><option value="weekly">تقييم أسبوعي</option><option value="monthly">تقييم شهري</option></select><label>الدرجة العظمى</label><input id="em" type="number" value="10"><button class="btn" id="ea">إضافة</button></div>
+ b.innerHTML=`<div class="card"><h3>إنشاء اختبار / تقييم</h3><label>الاسم</label><input id="en"><label>النوع</label><select id="ek"><option value="quiz">كويز</option><option value="midterm">ميد تيرم (اختبار فصلي)</option><option value="final">اختبار نهائي (نهاية الترم)</option><option value="weekly">تقييم أسبوعي</option><option value="monthly">تقييم شهري</option></select><label>الدرجة العظمى</label><input id="em" type="number" value="10"><p class="note">لاختبار الميد تيرم أو النهائي: اختر النوع المناسب (أو ارفعه من ملف)، ثم اربطه بالترم من تبويب «الفصول الدراسية». كل ترم يرتبط باختباره الخاص فلا يحدث أي تداخل بين الأترام.</p><button class="btn" id="ea">إضافة</button></div>
  <div class="card"><h3>الاختبارات الحالية</h3>${ex.map(e=>`<span class="pill">${esc(e.name)} (${e.max_mark}) · <a href="#" data-p="${e.id}" data-v="${e.published?0:1}">${e.published?'منشور — إخفاء':'مخفي — نشر'}</a> <a href="#" data-d="${e.id}" class="bad">✕</a></span> `).join('')||'لا يوجد'}</div><div id="up"></div>`;
  $('#ea').onclick=async()=>{await api('exams','POST',{name:$('#en').value,kind:$('#ek').value,max_mark:+$('#em').value},'return=minimal');gradesTab(b)};
  b.querySelectorAll('[data-p]').forEach(a=>a.onclick=async e=>{e.preventDefault();const v=a.dataset.v=='1';await api('exams?id=eq.'+a.dataset.p,'PATCH',{published:v});if(v){const x=ex.find(q=>q.id==a.dataset.p);notify((await all('students?select=code')).map(q=>q.code),'تم نشر درجات',x.name)}gradesTab(b)});
@@ -113,9 +113,9 @@ async function attTab(b){
  if(me().role!='admin'){b.innerHTML='<div class="msg">للأدمن فقط</div>';return}
  const sl=await all('slots?order=day,start_time');
  b.innerHTML=`<div class="card"><label>الجروب</label><select id="a">${sl.map(s=>`<option value="${s.id}">${s.day} ${fmt(s.start_time)} | ${esc(s.place)}</option>`).join('')}</select><label>التاريخ</label><input type="date" id="dt" value="${today()}"></div><div id="l"></div>`;
- const load=async()=>{const id=$('#a').value,d=$('#dt').value;const [en,at]=await Promise.all([api('enrollments?slot_id=eq.'+id+'&select=student:students(code,name)'),api(`attendance?slot_id=eq.${id}&date=eq.${d}`)]);const on=new Set(at.filter(x=>x.present).map(x=>x.student_code));
+ const load=async()=>{const id=$('#a').value,d=$('#dt').value;const en=await api('enrollments?slot_id=eq.'+id+'&select=student:students(code,name)');const at=en.length?await api(`attendance?date=eq.${d}&student_code=in.(${en.map(e=>encodeURIComponent(e.student.code)).join(',')})`):[];const SO=Object.fromEntries(at.map(x=>[x.student_code,x.slot_id]));const on=new Set(at.filter(x=>x.present).map(x=>x.student_code));
   $('#l').innerHTML=en.map(e=>`<div class="stud ${on.has(e.student.code)?'p':''}" data-c="${e.student.code}" onclick="this.classList.toggle('p')">${esc(e.student.name)}<small>${e.student.code}</small></div>`).join('')+'<button class="btn alt" id="sv">حفظ</button>';
-  $('#sv').onclick=async()=>{await api('attendance?on_conflict=student_code,slot_id,date','POST',[...document.querySelectorAll('.stud')].map(x=>({student_code:x.dataset.c,slot_id:+id,date:d,present:x.classList.contains('p'),marked_by:me().code})),'resolution=merge-duplicates,return=minimal');alert('تم')}};
+  $('#sv').onclick=async()=>{await api('attendance?on_conflict=student_code,date','POST',[...document.querySelectorAll('.stud')].map(x=>({student_code:x.dataset.c,slot_id:SO[x.dataset.c]||+id,date:d,present:x.classList.contains('p'),marked_by:me().code})),'resolution=merge-duplicates,return=minimal');alert('تم')}};
  $('#a').onchange=$('#dt').onchange=load;load()}
 
 // ===== الصلاحيات: اختيار الشخص ثم منحه أي عدد من الصفات والأقسام =====
@@ -129,59 +129,3 @@ async function permTab(b){
   $('#sa').onclick=()=>document.querySelectorAll('#tc .chip').forEach(c=>c.classList.add('on'));$('#sn').onclick=()=>document.querySelectorAll('#tc .chip').forEach(c=>c.classList.remove('on'));
   $('#sv').onclick=async()=>{const roles=[...document.querySelectorAll('#rc .chip.on')].map(x=>x.dataset.k),p={};document.querySelectorAll('#tc .chip.on').forEach(x=>p[x.dataset.k]=true);if(!roles.length)return alert('اختر صفة واحدة على الأقل');
    await api('staff?code=eq.'+a.code,'PATCH',{role:PRI.find(x=>roles.includes(x)),roles,perms:p});a.roles=roles;a.role=PRI.find(x=>roles.includes(x));a.perms=p;alert('تم حفظ الصلاحيات')}}}
-
-(function() {
-    // 1. منع القائمة المنسدلة (Right-Click)
-    document.addEventListener('contextmenu', function(e) {
-        e.preventDefault();
-    }, false);
-
-    // 2. منع اختصارات لوحة المفاتيح المتقدمة (Windows & Mac)
-    document.addEventListener('keydown', function(e) {
-        // منع F12
-        if (e.key === "F12" || e.keyCode === 123) {
-            e.preventDefault();
-            return false;
-        }
-
-        // منع اختصارات Windows: Ctrl + Shift + (I, J, C) و Ctrl + U
-        if (e.ctrlKey && e.shiftKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
-            e.preventDefault();
-            return false;
-        }
-        if (e.ctrlKey && ['U', 'u', 'S', 's'].includes(e.key)) { // منع Ctrl+U (عرض المصدر) و Ctrl+S (حفظ الصفحة)
-            e.preventDefault();
-            return false;
-        }
-
-        // منع اختصارات Mac: Cmd + Option + (I, J, C) و Cmd + U و Cmd + S
-        if (e.metaKey && e.altKey && ['I', 'i', 'J', 'j', 'C', 'c'].includes(e.key)) {
-            e.preventDefault();
-            return false;
-        }
-        if (e.metaKey && ['U', 'u', 'S', 's'].includes(e.key)) {
-            e.preventDefault();
-            return false;
-        }
-    }, false);
-
-    // 3. طريقة متطورة لاكتشاف فتح الـ Console عبر الـ Debugger
-    let devtoolsOpen = false;
-    const threshold = 160;
-
-    setInterval(function() {
-        const widthThreshold = window.outerWidth - window.innerWidth > threshold;
-        const heightThreshold = window.outerHeight - window.innerHeight > threshold;
-        
-        if (widthThreshold || heightThreshold) {
-            if (!devtoolsOpen) {
-                devtoolsOpen = true;
-                window.location.reload(); // إعادة تحميل الصفحة أو مسح المحتوى
-            }
-        } else {
-            devtoolsOpen = false;
-        }
-    }, 500);
-
-    // تعطيل الـ debugger التقليدي إذا تسبب في إزعاج المستخدم العادي، وتم الاستعاضة عنه بفحص أبعاد النافذة بدقة أعلى
-})();

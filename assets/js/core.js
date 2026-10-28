@@ -78,3 +78,6 @@ async function autoApprovePending(slotIds){
   for(const x of r){const g=sl[x.to_slot],l=lvN(x.student&&x.student.level);if(!g||!l||l!=lvN(g.level)||N[g.id]>=(g.capacity||35))continue;
     try{await approveReq(x,'تمت الموافقة على طلبك ونقلك إلى الجروب الجديد');N[g.id]++;done.push(x.id)}catch(e){}}
   return{ok:done.length,skip:r.length-done.length,done}}
+
+Object.assign(MAP,{'التقييمات':'clip','تقييماتي':'chart','تسجيل غياب يدوي':'pen','الفصول الدراسية':'cal','نتائج التقييمات':'chart'});
+Object.assign(DESC,{'التقييمات':'قيّم طلاب جروباتك أسبوعياً وحمّل السجلات','تقييماتي':'نتائجك في الترم والعام الدراسي'});
