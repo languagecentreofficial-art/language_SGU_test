@@ -88,9 +88,13 @@ function openPrintWin(){const w=window.open('','_blank');if(w){try{w.document.wr
 function printWin(inner,title,extraCss,w){
   const heads=[...document.querySelectorAll('link[rel=stylesheet],style')].map(n=>n.tagName=='LINK'?`<link rel="stylesheet" href="${n.href}">`:n.outerHTML).join('');
   const html=`<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>${heads}<style>
-@page{size:A4 landscape;margin:10mm}
-html,body{height:auto!important;min-height:0!important;display:block!important;padding:0!important;margin:0!important;background:#fff!important;overflow:visible!important}
-body{padding:8px!important;font-size:12px}
+@page{size:A4 landscape;margin:0}
+html,body{height:auto!important;min-height:0!important;display:block!important;margin:0!important;background:#fff!important;overflow:visible!important;max-width:none!important}
+body{padding:10mm!important;font-size:11px}
+table,.table{width:100%!important;max-width:100%!important;table-layout:auto;border-collapse:collapse}
+.table th,.table td,table th,table td{white-space:normal!important;overflow-wrap:break-word;word-break:normal;padding:4px 5px!important;font-size:10.5px!important;line-height:1.35;text-align:right;vertical-align:middle}
+.table th{font-weight:700}
+.table td:first-child,.table th:first-child{white-space:nowrap!important;width:1%}
 .noprint{display:none!important}
 .printarea{position:static!important;left:auto!important;width:auto!important;display:block!important}
 .printarea .printhead,.phd{display:flex!important;align-items:center;gap:16px;border-bottom:3px solid #d4a63a;padding-bottom:10px;margin-bottom:12px}
