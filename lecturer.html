@@ -1,5 +1,5 @@
-<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=49"><title>المحاضر</title></head><body><main><div id="v"></div></main>
-<script src="assets/js/core.js?v=49"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="assets/js/content.js?v=49"></script><script src="assets/js/evals.js?v=49"></script><script>
+<!doctype html><html lang="ar" dir="rtl"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="color-scheme" content="light only"><meta name="theme-color" content="#17306b"><link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet"><link rel="stylesheet" href="assets/css/style.css?v=55"><title>المحاضر</title></head><body><main><div id="v"></div></main>
+<script src="assets/js/core.js?v=55"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script><script src="assets/js/content.js?v=55"></script><script src="assets/js/evals.js?v=55"></script><script>
 const u=guard(['lecturer','admin','assistant']);shell(u);
 tabs([
 ['تسجيل الغياب',async b=>{const today=new Date().toLocaleDateString('en-CA',{timeZone:'Africa/Cairo'});
@@ -13,6 +13,7 @@ tabs([
   $('#sv').onclick=async()=>{const rows=[...document.querySelectorAll('.stud')].map(d=>({student_code:d.dataset.c,slot_id:+id,date:today,present:d.classList.contains('p'),marked_by:u.code}));await api('attendance?on_conflict=student_code,date','POST',rows,'resolution=merge-duplicates,return=minimal');alert('تم تسجيل الحضور، وغياب باقي الطلاب (حالة واحدة للطالب في اليوم، والحضور المسجل من جروب آخر يبقى كما هو)')}};
  $('#d').onchange=loadG;$('#g').onchange=loadS;loadG()}],
 ['التقييمات',b=>evalLecTab(b,u)],
+['غياب جروباتي',b=>attLecTab(b,u)],
 ['جدول محاضراتي',async b=>{const s=await api(`slots?lecturer_code=eq.${u.code}&order=start_time`);if(!s.length){b.innerHTML='<div class="msg">لا توجد جروبات مسندة إليك حتى الآن.</div>';return}
  const cap=g=>g.capacity||35,lb=g=>`${g.day} ${fmt(g.start_time)}-${fmt(g.end_time)} | كلاس ${esc(g.place)} | ${esc(g.level)}`,en=await api(`enrollments?slot_id=in.(${s.map(x=>x.id).join(',')})&select=slot_id`),N={};en.forEach(e=>N[e.slot_id]=(N[e.slot_id]||0)+1);
  const cnt=g=>`<span id="n${g.id}" ${(N[g.id]||0)>cap(g)?'class="bad"':''}>${N[g.id]||0}/${cap(g)} طالب</span>`;

@@ -34,7 +34,7 @@ function shell(u){
   const side=u&&['admin','assistant','affairs'].includes(u.role);
   document.body.insertAdjacentHTML('afterbegin',`<header>${side?`<button class="menu" aria-label="القائمة" onclick="document.body.classList.toggle('open')">${ic('menu',22)}</button>`:''}<img src="assets/logo.png" alt="" onerror="this.style.visibility='hidden'"><h1>جامعة الصالحية الجديدة<small>كورس اللغة الإنجليزية</small></h1>${u?`<div class="who"><b>${esc(u.name)}</b><small>${ROLE[u.role]} · ${esc(u.code)}</small></div><button class="bell" id="bell" aria-label="الإشعارات">${ic('bell')}<b>0</b></button><button class="out" onclick="logout()" aria-label="خروج">${ic('out')}</button>`:''}</header>`);
   document.body.insertAdjacentHTML('beforeend',`<footer><div class="soc"><a href="${SOCIAL.whatsapp}" aria-label="واتساب">${ic('wa',22)}</a><a href="${SOCIAL.instagram}" aria-label="إنستجرام">${ic('ig',22)}</a><a href="${SOCIAL.facebook}" aria-label="فيسبوك">${ic('fb',22)}</a></div><small>M.H.D</small></footer>`);
-  if(u){const poll=async()=>{try{const n=await api(`notifications?target_code=eq.${u.code}&read=eq.false&order=id.desc`);$('#bell b').textContent=n.length;$('#bell').onclick=async()=>{alert(n.map(x=>x.title+'\n'+(x.body||'')).join('\n\n')||'لا توجد إشعارات');if(n.length)await api(`notifications?target_code=eq.${u.code}&read=eq.false`,'PATCH',{read:true});poll()}}catch(e){}};poll();setInterval(poll,20000)}}
+  if(u){const poll=async()=>{try{const n=await api(`notifications?target_code=eq.${u.code}&read=eq.false&order=id.desc`);$('#bell b').textContent=n.length;$('#bell').onclick=async()=>{alert(n.map(x=>x.title+'\n'+(x.body||'')).join('\n\n')||'لا توجد إشعارات');if(n.length)await api(`notifications?target_code=eq.${u.code}&read=eq.false`,'PATCH',{read:true});poll()}}catch(e){}};poll();setInterval(()=>{if(!document.hidden)poll()},180000);document.addEventListener('visibilitychange',()=>{if(!document.hidden)poll()})}}
 function lay(box){box.querySelectorAll('.card>label').forEach(l=>{const i=l.nextElementSibling;if(i&&/^(INPUT|SELECT|TEXTAREA)$/.test(i.tagName)){const w=document.createElement('div');w.className='f'+(i.tagName=='TEXTAREA'?' fw':'');l.replaceWith(w);w.append(l,i)}});
   box.querySelectorAll('.card').forEach(c=>{const g=!!c.querySelector(':scope>.f'),w=!!c.querySelector('table,.msbar');if(c.classList.contains('gf')!==g)c.classList.toggle('gf',g);if(c.classList.contains('wide')!==w)c.classList.toggle('wide',w)})}
 function tabs(defs,box){
@@ -112,4 +112,8 @@ function printReport(title,sub,tableHtml,w){
   printWin(`<div class="printarea"><div class="printhead"><img src="${logo}" height="56" alt=""><div><b>كورس اللغة الإنجليزية</b><br>جامعة الصالحية الجديدة<br>${esc(title)}<br><small>${esc(sub||'')}</small></div></div>${tableHtml}</div>`,title,'',w)}
 // جدول كامل للطباعة (رأس يتكرر في كل صفحة)
 function printTable(headers,rows){return `<table class="table"><thead><tr><th>#</th>${headers.map(h=>`<th>${esc(h)}</th>`).join('')}</tr></thead><tbody>${rows.map((r,i)=>`<tr><td>${i+1}</td>${r.map(v=>`<td>${esc(v)}</td>`).join('')}</tr>`).join('')}</tbody></table>`}
-Object.assign(MAP,{'ساعات المحاضرين':'board'});
+Object.assign(MAP,{'ساعات المحاضرين':'board','كلاسات المحاضرين':'table'});
+
+const ATT_BLOCK='محجوب بسبب عدم تجاوز نسبة الحضور';
+Object.assign(MAP,{'غياب جروباتي':'check','نسبة الحضور':'warn'});
+Object.assign(DESC,{'غياب جروباتي':'نسب حضور طلاب جروباتك والإنذارات'});

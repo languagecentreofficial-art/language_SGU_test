@@ -108,3 +108,33 @@ nav.side .navg:first-child{margin-top:0;border-top:0}
 .evs{display:block;color:#5d6b8f;font-size:.72rem}
 .evnav{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.evnav input{flex:1;min-width:150px;width:auto}.evnav .btn{margin:0}
 .evt td:first-child,.evt th:first-child{position:sticky;right:0;z-index:1;background:#fff}.evt th:first-child{background:#0a1a44}
+
+/* لوحة كلاسات المحاضرين */
+.lb-wrap{overflow-x:auto;border-radius:14px;border:1px solid #e1e6f2;background:#fff}
+.lboard{width:100%;min-width:1040px;border-collapse:separate;border-spacing:0}
+.lboard th{background:#0a1a44;color:#f2cf6b;padding:10px 8px;font-weight:700;text-align:center;white-space:nowrap}
+.lboard th small{display:block;color:#c9d3ef;font-weight:600;font-size:.7rem}
+.lboard td{vertical-align:top;padding:8px;border-bottom:1px solid #e8ecf6;border-inline-start:1px solid #eef1f8;min-width:122px}
+.lboard tbody tr:nth-child(even) td{background:#fafbfe}
+.lboard .lb-name{min-width:175px;position:sticky;right:0;z-index:1;background:#fff;text-align:right}
+.lboard tbody tr:nth-child(even) .lb-name{background:#fafbfe}.lboard th.lb-name{background:#0a1a44;z-index:2;text-align:right}
+.lb-name b{display:block;color:#0a1a44}.lb-name small{display:block;color:#5d6b8f;font-size:.74rem;margin-top:2px}
+.lb-chip{background:#fff8e3;border:1px solid #e8d08a;border-inline-start:4px solid #d4a63a;border-radius:10px;padding:6px 9px;margin-bottom:6px;line-height:1.4;text-align:right}
+.lb-chip b{display:block;color:#0a1a44;font-size:.84rem}.lb-chip span{display:block;color:#12307a;font-weight:700;font-size:.8rem}.lb-chip small{display:block;color:#5d6b8f;font-size:.7rem}
+.lb-none{color:#c3cbe0;display:block;text-align:center;padding-top:6px}
+.lb-m{text-align:center;vertical-align:middle!important;font-size:1.15rem;color:#12307a;min-width:92px}
+.lb-del{margin-top:8px;background:#fde8ec;color:#8f1d33;border:1px solid #c62a47;border-radius:8px;padding:3px 10px;font:inherit;font-size:.74rem;cursor:pointer}
+@media print{.lb-del{display:none!important}.lb-wrap{overflow:visible;border:0}.lboard{min-width:0!important}.lboard td{min-width:0!important}.lboard .lb-name{position:static}.lb-chip{break-inside:avoid;padding:3px 5px;margin-bottom:3px}}
+
+/* نسبة الحضور */
+.pb2{height:8px;background:#e8ecf6;border-radius:6px;overflow:hidden;min-width:70px;margin-top:4px}.pb2 i{display:block;height:100%;background:#0f8a5f}.pb2.bad i{background:#b3263f}
+.okmsg{background:#e8f7f0;color:#0f6b4a;border-inline-start-color:#0f8a5f}
+.lvs{display:flex;flex-wrap:wrap;gap:2px 10px}.lvs .chk{margin:0;font-size:.8rem}
+
+/* عارض المحتوى داخل الموقع */
+.ctmodal{position:fixed;inset:0;background:#0a1a44d9;z-index:200;display:flex;align-items:center;justify-content:center;padding:10px}
+.ctbox{background:#fff;border-radius:14px;width:100%;max-width:1000px;height:92vh;display:flex;flex-direction:column;overflow:hidden}
+.cthd{display:flex;justify-content:space-between;align-items:center;gap:8px;padding:10px 14px;border-bottom:2px solid #d4a63a;flex-wrap:wrap}
+.cthd span{display:flex;gap:6px;align-items:center}.cthd .chip{margin:0}
+.ctbd{flex:1;min-height:0;background:#111;display:flex}.ctbd iframe,.ctbd video{width:100%;height:100%;border:0;background:#000}
+.ctbd img{max-width:100%;max-height:100%;margin:auto;object-fit:contain}.ctbd .msg{margin:auto;background:#fff;text-align:center}
